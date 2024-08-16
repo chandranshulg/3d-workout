@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Workout Visualizer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        header {
+            background-color: #4CAF50;
+            padding: 10px;
+            text-align: center;
+            color: white;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #exerciseSelector {
+            width: 200px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        #canvasContainer {
+            width: 80%;
+            height: 500px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .instructions {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>3D Workout Visualizer</h1>
+    </header>
+    <div class="container">
+        <select id="exerciseSelector">
+            <option value="pushup">Push-up</option>
+            <option value="squat">Squat</option>
+            <option value="yoga">Yoga Pose</option>
+        </select>
+        <div id="canvasContainer"></div>
+        <div class="instructions">
+            <p>Use your mouse to rotate the model and scroll to zoom in/out.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        let scene, camera, renderer, controls;
+        let currentModel;
+
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / 600, 0.1, 1000);
+            camera.position.set(0, 1, 3);
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth * 0.8, 500);
+            document.getElementById('canvasContainer').appendChild(renderer.domElement);
+
+            // Orbit controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.25;
+            controls.screenSpacePanning = false;
+            controls.maxPolarAngle = Math.PI / 2;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 7.5);
+            scene.add(directionalLight);
+
+            // Load initial model
+            loadModel('pushup');
+
+            // Render loop
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function loadModel(exercise) {
+            const loader = new THREE.GLTFLoader();
+
+            // Remove existing model
+            if (currentModel) {
+                scene.remove(currentModel);
+            }
+
+            // Load the selected model
+            let modelPath;
+            if (exercise === 'pushup') {
+                modelPath = 'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf'; // Replace with actual push-up model
+            } else if (exercise === 'squat') {
+                modelPath = 'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf'; // Replace with actual squat model
+            } else if (exercise === 'yoga') {
+                modelPath = 'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf'; // Replace with actual yoga pose model
+            }
+
+            loader.load(modelPath, function (gltf) {
+                currentModel = gltf.scene;
+                currentModel.scale.set(1, 1, 1);
+                scene.add(currentModel);
+            });
+        }
+
+        document.getElementById('exerciseSelector').addEventListener('change', function() {
+            loadModel(this.value);
+        });
+
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / 600;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth * 0.8, 500);
+        });
+
+        init();
+    </script>
+</body>
+</html>
